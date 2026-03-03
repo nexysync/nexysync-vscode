@@ -1,0 +1,228 @@
+{
+    "name": "nexysync-vscode",
+    "displayName": "NexySync",
+    "description": "Manage your NexySync AI communications bus — projects, agents, keys, and usage",
+    "version": "0.1.18",
+    "publisher": "NexySync",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/nexysync/nexysync-vscode"
+    },
+    "engines": {
+        "vscode": "^1.85.0"
+    },
+    "categories": [
+        "Other",
+        "AI"
+    ],
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./dist/extension.js",
+    "icon": "resources/icon.png",
+    "contributes": {
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "nexysync",
+                    "title": "NexySync",
+                    "icon": "resources/icon.svg"
+                }
+            ]
+        },
+        "views": {
+            "nexysync": [
+                {
+                    "id": "nexysync.projects",
+                    "name": "Projects",
+                    "icon": "$(project)"
+                },
+                {
+                    "id": "nexysync.agents",
+                    "name": "Agents",
+                    "icon": "$(hubot)"
+                }
+            ]
+        },
+        "viewsWelcome": [
+            {
+                "view": "nexysync.projects",
+                "contents": "Welcome to NexySync! ⚡\n\nOrchestrate your AI agents from right here in VS Code.\n\n[Create Account](command:nexysync.register)\n\nAlready have an account?\n\n[Sign In](command:nexysync.login)",
+                "when": "!nexysync.loggedIn"
+            },
+            {
+                "view": "nexysync.projects",
+                "contents": "No Projects yet. Create one to connect your agents.\n\n[Create Your First Project](command:nexysync.createProject)",
+                "when": "nexysync.loggedIn"
+            },
+            {
+                "view": "nexysync.agents",
+                "contents": "Select a Project above to see its agents.",
+                "when": "nexysync.loggedIn && !nexysync.projectSelected"
+            },
+            {
+                "view": "nexysync.agents",
+                "contents": "No agents in this project.\n\n[Create Agent](command:nexysync.createAgent)",
+                "when": "nexysync.loggedIn && nexysync.projectSelected"
+            },
+            {
+                "view": "nexysync.agents",
+                "contents": "Login to manage agents.\n\n[Login](command:nexysync.login)",
+                "when": "!nexysync.loggedIn"
+            }
+        ],
+        "commands": [
+            {
+                "command": "nexysync.login",
+                "title": "NexySync: Login"
+            },
+            {
+                "command": "nexysync.register",
+                "title": "NexySync: Create Account"
+            },
+            {
+                "command": "nexysync.logout",
+                "title": "NexySync: Logout"
+            },
+            {
+                "command": "nexysync.createProject",
+                "title": "NexySync: Create Project",
+                "icon": "$(add)"
+            },
+            {
+                "command": "nexysync.createAgent",
+                "title": "NexySync: Create Agent",
+                "icon": "$(add)"
+            },
+            {
+                "command": "nexysync.setupAgent",
+                "title": "NexySync: Setup Agent for This Workspace"
+            },
+            {
+                "command": "nexysync.rotateKey",
+                "title": "NexySync: Rotate Agent Key"
+            },
+            {
+                "command": "nexysync.cloneAgent",
+                "title": "NexySync: Clone Agent"
+            },
+            {
+                "command": "nexysync.deleteAgent",
+                "title": "NexySync: Delete Agent"
+            },
+            {
+                "command": "nexysync.deleteProject",
+                "title": "NexySync: Delete Project"
+            },
+            {
+                "command": "nexysync.dashboard",
+                "title": "NexySync: Project Dashboard"
+            },
+            {
+                "command": "nexysync.refreshProjects",
+                "title": "Refresh",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "nexysync.refreshAgents",
+                "title": "Refresh",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "nexysync.selectProject",
+                "title": "Select Project"
+            },
+            {
+                "command": "nexysync.agentDetail",
+                "title": "NexySync: Agent Details"
+            },
+            {
+                "command": "nexysync.editAgent",
+                "title": "NexySync: Edit Agent"
+            }
+        ],
+        "menus": {
+            "view/title": [
+                {
+                    "command": "nexysync.createProject",
+                    "when": "view == nexysync.projects",
+                    "group": "navigation"
+                },
+                {
+                    "command": "nexysync.refreshProjects",
+                    "when": "view == nexysync.projects",
+                    "group": "navigation"
+                },
+                {
+                    "command": "nexysync.createAgent",
+                    "when": "view == nexysync.agents",
+                    "group": "navigation"
+                },
+                {
+                    "command": "nexysync.refreshAgents",
+                    "when": "view == nexysync.agents",
+                    "group": "navigation"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "nexysync.dashboard",
+                    "when": "viewItem == project",
+                    "group": "0_open"
+                },
+                {
+                    "command": "nexysync.deleteProject",
+                    "when": "viewItem == project",
+                    "group": "2_danger"
+                },
+                {
+                    "command": "nexysync.agentDetail",
+                    "when": "viewItem == agent",
+                    "group": "0_open"
+                },
+                {
+                    "command": "nexysync.setupAgent",
+                    "when": "viewItem == agent",
+                    "group": "1_modify"
+                },
+                {
+                    "command": "nexysync.editAgent",
+                    "when": "viewItem == agent",
+                    "group": "1_modify"
+                },
+                {
+                    "command": "nexysync.rotateKey",
+                    "when": "viewItem == agent",
+                    "group": "1_modify"
+                },
+                {
+                    "command": "nexysync.cloneAgent",
+                    "when": "viewItem == agent",
+                    "group": "1_modify"
+                },
+                {
+                    "command": "nexysync.deleteAgent",
+                    "when": "viewItem == agent",
+                    "group": "2_danger"
+                }
+            ]
+        },
+        "configuration": {
+            "title": "NexySync",
+            "properties": {}
+        }
+    },
+    "scripts": {
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "package": "vsce package",
+        "lint": "eslint src --ext ts"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.0",
+        "@types/vscode": "^1.85.0",
+        "typescript": "^5.3.0",
+        "@vscode/vsce": "^2.22.0"
+    }
+}

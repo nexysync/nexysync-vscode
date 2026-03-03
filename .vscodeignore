@@ -1,0 +1,11 @@
+.vscodeignore is used by vsce to exclude files from the published extension
+src/**
+tsconfig.json
+.gitignore
+node_modules/**
+*.run.txt
+*.out.txt
+*.err.txt
+*.pid.txt
+*.cde.txt
+*.time.txt
