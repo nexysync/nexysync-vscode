@@ -119,8 +119,8 @@ export function activate(context: vscode.ExtensionContext): void {
             await createAgent(projectId);
             agentsView.refresh();
         }),
-        vscode.commands.registerCommand('nexysync.setupAgent', async () => {
-            await setupAgent();
+        vscode.commands.registerCommand('nexysync.setupAgent', async (item?: AgentItem) => {
+            await setupAgent(item);
             updateStatusBar();
         }),
         vscode.commands.registerCommand('nexysync.rotateKey', async (item: AgentItem) => {
@@ -129,6 +129,23 @@ export function activate(context: vscode.ExtensionContext): void {
         }),
         vscode.commands.registerCommand('nexysync.cloneAgent', async (item: AgentItem) => {
             await cloneAgent(item.projectId, item.agent._id || item.agent.id, item.agent.slug);
+        }),
+        vscode.commands.registerCommand('nexysync.copyAgentKey', async (item: AgentItem) => {
+            const rotate = await vscode.window.showWarningMessage(
+                'To get a raw API key, a new one must be generated (the current key will be invalidated).',
+                { modal: true },
+                'Generate & Copy',
+            );
+            if (rotate === 'Generate & Copy') {
+                try {
+                    const result = await api.rotateAgentKey(item.projectId, item.agent._id || item.agent.id);
+                    await vscode.env.clipboard.writeText(result.apiKey);
+                    vscode.window.showInformationMessage('API key copied to clipboard');
+                    updateStatusBar();
+                } catch (err) {
+                    vscode.window.showErrorMessage(`Failed to rotate key: ${(err as Error).message}`);
+                }
+            }
         }),
         vscode.commands.registerCommand('nexysync.deleteAgent', async (item: AgentItem) => {
             const confirm = await vscode.window.showInputBox({

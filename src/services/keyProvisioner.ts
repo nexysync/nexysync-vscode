@@ -152,8 +152,10 @@ export async function provisionKey(
     if (existing?.custom_enc_key && existing.enc_key) {
         finalEncKey = existing.enc_key;
         customFlag = true;
+    } else if (encKey) {
+        finalEncKey = encKey;
     } else {
-        finalEncKey = encKey || crypto.randomBytes(32).toString('base64');
+        throw new Error('No encryption key provided by the API and no custom key is configured.');
     }
 
     // Write key file

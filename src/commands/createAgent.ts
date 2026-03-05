@@ -66,7 +66,7 @@ export async function createAgent(projectId?: string): Promise<void> {
             const ws = vscode.workspace.workspaceFolders?.[0];
             if (ws) {
                 const { provisionWorkspace } = await import('../services/keyProvisioner');
-                await provisionWorkspace(ws, result.apiKey, name);
+                await provisionWorkspace(ws, result.apiKey, name, result.encKey);
             } else {
                 vscode.window.showInformationMessage('API key copied to clipboard (no workspace open for setup)');
             }

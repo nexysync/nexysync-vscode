@@ -2,7 +2,7 @@
     "name": "nexysync-vscode",
     "displayName": "NexySync",
     "description": "Manage your NexySync AI communications bus — projects, agents, keys, and usage",
-    "version": "0.1.18",
+    "version": "0.1.19",
     "publisher": "NexySync",
     "license": "MIT",
     "repository": {
@@ -140,6 +140,10 @@
             {
                 "command": "nexysync.editAgent",
                 "title": "NexySync: Edit Agent"
+            },
+            {
+                "command": "nexysync.copyAgentKey",
+                "title": "NexySync: Copy Agent Key"
             }
         ],
         "menus": {
@@ -205,6 +209,11 @@
                     "command": "nexysync.deleteAgent",
                     "when": "viewItem == agent",
                     "group": "2_danger"
+                },
+                {
+                    "command": "nexysync.copyAgentKey",
+                    "when": "viewItem == agent",
+                    "group": "1_modify"
                 }
             ]
         },
@@ -216,7 +225,7 @@
     "scripts": {
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
-        "package": "vsce package",
+        "package": "vsce package --out builds/",
         "lint": "eslint src --ext ts"
     },
     "devDependencies": {

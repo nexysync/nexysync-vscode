@@ -5,63 +5,82 @@ import * as vscode from 'vscode';
 import * as api from '../services/api';
 import { provisionWorkspace } from '../services/keyProvisioner';
 
-export async function setupAgent(): Promise<void> {
+import { AgentItem } from '../views/AgentsView';
+
+export async function setupAgent(item?: AgentItem): Promise<void> {
     const ws = vscode.workspace.workspaceFolders?.[0];
     if (!ws) {
         vscode.window.showErrorMessage('Open a workspace folder first.');
         return;
     }
 
-    // Pick project
-    let projects: any[];
-    try {
-        const result = await api.getProjects();
-        projects = result.projects || [];
-    } catch (err) {
-        vscode.window.showErrorMessage(`Failed to load projects: ${(err as Error).message}`);
-        return;
-    }
+    let projectId: string;
+    let agentId: string;
+    let agentLabel: string;
+    let isNewAgent = false;
 
-    if (projects.length === 0) {
-        const create = await vscode.window.showInformationMessage(
-            'No Projects found. Create one first?',
-            'Create Project',
-        );
-        if (create === 'Create Project') {
-            vscode.commands.executeCommand('nexysync.createProject');
+    if (item) {
+        // Skip prompts if called from context menu on an agent
+        projectId = item.projectId;
+        agentId = item.agent._id || item.agent.id;
+        agentLabel = item.agent.name || item.agent.slug;
+    } else {
+        // Pick project
+        let projects: any[];
+        try {
+            const result = await api.getProjects();
+            projects = result.projects || [];
+        } catch (err) {
+            vscode.window.showErrorMessage(`Failed to load projects: ${(err as Error).message}`);
+            return;
         }
-        return;
+
+        if (projects.length === 0) {
+            const create = await vscode.window.showInformationMessage(
+                'No Projects found. Create one first?',
+                'Create Project',
+            );
+            if (create === 'Create Project') {
+                vscode.commands.executeCommand('nexysync.createProject');
+            }
+            return;
+        }
+
+        const projectPick = await vscode.window.showQuickPick(
+            projects.map(p => ({ label: p.name, description: p.slug, id: p._id || p.id })),
+            { placeHolder: 'Select Project' },
+        );
+        if (!projectPick) { return; }
+
+        // Pick agent or create new
+        let agents: any[];
+        try {
+            const result = await api.getAgents(projectPick.id);
+            agents = result.agents || [];
+        } catch (err) {
+            vscode.window.showErrorMessage(`Failed to load agents: ${(err as Error).message}`);
+            return;
+        }
+
+        const items = [
+            { label: '$(add) Create New Agent', id: '__new__', description: '' },
+            ...agents.map(a => ({ label: a.name || a.slug, description: a.slug, id: a._id || a.id })),
+        ];
+
+        const agentPick = await vscode.window.showQuickPick(items, { placeHolder: 'Select agent' });
+        if (!agentPick) { return; }
+
+        projectId = projectPick.id;
+        agentId = agentPick.id;
+        agentLabel = agentPick.label;
+        isNewAgent = agentId === '__new__';
     }
-
-    const projectPick = await vscode.window.showQuickPick(
-        projects.map(p => ({ label: p.name, description: p.slug, id: p._id || p.id })),
-        { placeHolder: 'Select Project' },
-    );
-    if (!projectPick) { return; }
-
-    // Pick agent or create new
-    let agents: any[];
-    try {
-        const result = await api.getAgents(projectPick.id);
-        agents = result.agents || [];
-    } catch (err) {
-        vscode.window.showErrorMessage(`Failed to load agents: ${(err as Error).message}`);
-        return;
-    }
-
-    const items = [
-        { label: '$(add) Create New Agent', id: '__new__', description: '' },
-        ...agents.map(a => ({ label: a.name || a.slug, description: a.slug, id: a._id || a.id })),
-    ];
-
-    const agentPick = await vscode.window.showQuickPick(items, { placeHolder: 'Select agent' });
-    if (!agentPick) { return; }
 
     let apiKey: string;
     let agentName: string;
     let encKey: string | undefined;
 
-    if (agentPick.id === '__new__') {
+    if (isNewAgent) {
         // Create new agent
         const slug = await vscode.window.showInputBox({
             prompt: 'Agent slug (lowercase, hyphens)',
@@ -84,7 +103,7 @@ export async function setupAgent(): Promise<void> {
         });
 
         try {
-            const result = await api.createAgent(projectPick.id, slug, name, role);
+            const result = await api.createAgent(projectId, slug, name, role);
             apiKey = result.apiKey;
             encKey = result.encKey;
             agentName = name;
@@ -112,10 +131,10 @@ export async function setupAgent(): Promise<void> {
         if (rotate !== 'Generate New Key') { return; }
 
         try {
-            const result = await api.rotateAgentKey(projectPick.id, agentPick.id);
+            const result = await api.rotateAgentKey(projectId, agentId);
             apiKey = result.apiKey;
             encKey = result.encKey;
-            agentName = agentPick.label;
+            agentName = agentLabel;
         } catch (err) {
             vscode.window.showErrorMessage(`Failed to rotate key: ${(err as Error).message}`);
             return;
